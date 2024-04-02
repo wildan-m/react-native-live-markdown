@@ -25,6 +25,8 @@ function makeDefaultMarkdownStyle(): MarkdownStyle {
     },
     emoji: {
       fontSize: 20,
+      // fontStyle: 'normal',
+      // fontWeight: 'normal',
     },
     blockquote: {
       borderColor: 'gray',

@@ -174,6 +174,10 @@ function getTagPriority(tag: string) {
       return 2;
     case 'h1':
       return 1;
+    // case 'italic':
+    //   return 1;
+    // case 'bold':
+    //   return 1;
     default:
       return 0;
   }
@@ -205,7 +209,6 @@ function groupRanges(ranges: Range[]) {
     return acc;
   }, [] as Range[]);
 }
-
 function parseExpensiMarkToRanges(markdown: string): Range[] {
   const html = parseMarkdownToHTML(markdown);
   const tokens = parseHTMLToTokens(html);
@@ -219,5 +222,4 @@ function parseExpensiMarkToRanges(markdown: string): Range[] {
   const groupedRanges = groupRanges(sortedRanges);
   return groupedRanges;
 }
-
 globalThis.parseExpensiMarkToRanges = parseExpensiMarkToRanges;

@@ -95,7 +95,6 @@ function ungroupRanges(ranges: MarkdownRange[]): MarkdownRange[] {
   });
   return ungroupedRanges;
 }
-
 function parseRangesToHTMLNodes(text: string, ranges: MarkdownRange[], markdownStyle: PartialMarkdownStyle = {}, disableInlineStyles = false): HTMLElement {
   const root: HTMLElement = document.createElement('span');
   root.className = 'root';
