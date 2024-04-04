@@ -23,6 +23,10 @@ public class MarkdownStyle {
 
   private final float mEmojiFontSize;
 
+  private final String mEmojiFontWeight;
+
+  private final String mEmojiFontStyle;
+
   @ColorInt
   private final int mBlockquoteBorderColor;
 
@@ -65,6 +69,8 @@ public class MarkdownStyle {
     mLinkColor = parseColor(map, "link", "color", context);
     mH1FontSize = parseFloat(map, "h1", "fontSize");
     mEmojiFontSize = parseFloat(map, "emoji", "fontSize");
+    mEmojiFontWeight = parseString(map, "emoji", "fontWeight");
+    mEmojiFontStyle = parseString(map, "emoji", "fontStyle");
     mBlockquoteBorderColor = parseColor(map, "blockquote", "borderColor", context);
     mBlockquoteBorderWidth = parseFloat(map, "blockquote", "borderWidth");
     mBlockquoteMarginLeft = parseFloat(map, "blockquote", "marginLeft");
@@ -124,6 +130,12 @@ public class MarkdownStyle {
 
   public float getEmojiFontSize() {
     return mEmojiFontSize;
+  }
+  public String getEmojiFontWeight() {
+    return mEmojiFontWeight;
+  }
+  public String getEmojiFontStyle() {
+    return mEmojiFontStyle;
   }
 
   @ColorInt

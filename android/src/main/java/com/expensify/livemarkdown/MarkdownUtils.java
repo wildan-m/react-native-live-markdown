@@ -20,6 +20,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class MarkdownUtils {
@@ -91,19 +93,68 @@ public class MarkdownUtils {
 
     try {
       JSONArray ranges = new JSONArray(output);
-      for (int i = 0; i < ranges.length(); i++) {
+      JSONArray adjustedRanges =  adjustRanges(ranges);
+
+      for (int i = 0; i < adjustedRanges.length(); i++) {
+            JSONObject range = adjustedRanges.getJSONObject(i);
+            String type = range.getString("type");
+            int start = range.getInt("start");
+            int length = range.getInt("length");
+            int depth = range.optInt("depth", 1);
+            int end = start + length;
+            applyRange(ssb, type, start, end, depth);
+          }
+        } catch (JSONException e) {
+          // Do nothing
+        }
+  }
+
+  public JSONArray adjustRanges(JSONArray ranges) throws JSONException {
+    JSONArray newRanges = new JSONArray();
+    for (int i = 0; i < ranges.length(); i++) {
         JSONObject range = ranges.getJSONObject(i);
         String type = range.getString("type");
         int start = range.getInt("start");
         int length = range.getInt("length");
-        int depth = range.optInt("depth", 1);
         int end = start + length;
-        applyRange(ssb, type, start, end, depth);
-      }
-    } catch (JSONException e) {
-      // Do nothing
+
+        if (type.equals("emoji")) {
+            // If the type is emoji, remove any overlapping bold or italic range
+            for (int j = 0; j < newRanges.length(); j++) {
+                JSONObject existingRange = newRanges.getJSONObject(j);
+                String existingType = existingRange.getString("type");
+                int existingStart = existingRange.getInt("start");
+                int existingLength = existingRange.getInt("length");
+                int existingEnd = existingStart + existingLength;
+
+                if ((existingType.equals("bold") || existingType.equals("italic")) && (existingStart < end && existingEnd > start)) {
+                    // If the emoji range is completely within the existing range, split the existing range
+                    if (start > existingStart && end < existingEnd) {
+                        existingRange.put("length", start - existingStart);
+                        JSONObject newRange = new JSONObject();
+                        newRange.put("type", existingType);
+                        newRange.put("start", end);
+                        newRange.put("length", existingEnd - end);
+                        newRanges.put(newRange);
+                    } else {
+                        // Otherwise, adjust the existing range to not overlap with the emoji range
+                        if (start > existingStart) {
+                            existingRange.put("length", start - existingStart);
+                        } else if (end < existingEnd) {
+                            existingRange.put("start", end);
+                            existingRange.put("length", existingEnd - end);
+                        } else {
+                            newRanges.remove(j);
+                            j--;
+                        }
+                    }
+                }
+            }
+        }
+        newRanges.put(range);
     }
-  }
+    return newRanges;
+}
 
   private void applyRange(SpannableStringBuilder ssb, String type, int start, int end, int depth) {
     switch (type) {

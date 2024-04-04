@@ -174,10 +174,10 @@ function getTagPriority(tag: string) {
       return 2;
     case 'h1':
       return 1;
-    // case 'italic':
-    //   return 1;
-    // case 'bold':
-    //   return 1;
+    case 'italic':
+      return 1;
+    case 'bold':
+      return 1;
     default:
       return 0;
   }
