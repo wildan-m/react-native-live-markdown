@@ -36,11 +36,13 @@ function makeDefaultMarkdownStyle(): MarkdownStyle {
     },
     code: {
       fontFamily: FONT_FAMILY_MONOSPACE,
+      fontSize: 20,
       color: 'black',
       backgroundColor: 'lightgray',
     },
     pre: {
       fontFamily: FONT_FAMILY_MONOSPACE,
+      fontSize: 20,
       color: 'black',
       backgroundColor: 'lightgray',
     },
