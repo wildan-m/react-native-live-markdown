@@ -20,6 +20,8 @@
     _h1FontSize = style.h1.fontSize;
 
     _emojiFontSize = style.emoji.fontSize;
+    _emojiFontWeight = RCTNSStringFromString(style.emoji.fontWeight);
+    _emojiFontStyle = RCTNSStringFromString(style.emoji.fontStyle);
 
     _blockquoteBorderColor = RCTUIColorFromSharedColor(style.blockquote.borderColor);
     _blockquoteBorderWidth = style.blockquote.borderWidth;
@@ -58,6 +60,8 @@
     _h1FontSize = [RCTConvert CGFloat:json[@"h1"][@"fontSize"]];
 
     _emojiFontSize = [RCTConvert CGFloat:json[@"emoji"][@"fontSize"]];
+    _emojiFontWeight = [RCTConvert NSString:json[@"emoji"][@"fontWeight"]];
+    _emojiFontStyle = [RCTConvert NSString:json[@"emoji"][@"fontStyle"]];
 
     _blockquoteBorderColor = [RCTConvert UIColor:json[@"blockquote"][@"borderColor"]];
     _blockquoteBorderWidth = [RCTConvert CGFloat:json[@"blockquote"][@"borderWidth"]];

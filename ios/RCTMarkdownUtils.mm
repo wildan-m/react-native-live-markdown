@@ -86,21 +86,21 @@
                                            variant:nil
                                    scaleMultiplier:0];
       } else if ([type isEqualToString:@"h1"]) {
-        font = [RCTFont updateFont:font withFamily:nil
-                                              size:[NSNumber numberWithFloat:_markdownStyle.h1FontSize]
-                                            weight:@"bold"
-                                             style:nil
-                                           variant:nil
-                                   scaleMultiplier:0];
+          font = [RCTFont updateFont:font withFamily:nil
+                                size:[NSNumber numberWithFloat:_markdownStyle.h1FontSize]
+                              weight:@"bold"
+                               style:nil
+                             variant:nil
+                     scaleMultiplier:0];
       } else if ([type isEqualToString:@"emoji"]) {
-        font = [RCTFont updateFont:font withFamily:nil
-                                              size:[NSNumber numberWithFloat:_markdownStyle.emojiFontSize]
-                                            weight:nil
-                                             style:nil
-                                           variant:nil
-                                   scaleMultiplier:0];
+          font = [RCTFont updateFont:font withFamily:nil
+                                size:[NSNumber numberWithFloat:_markdownStyle.emojiFontSize]
+                              weight:_markdownStyle.emojiFontWeight
+                               style:_markdownStyle.emojiFontStyle
+                             variant:nil
+                     scaleMultiplier:0];
       }
-      [attributedString addAttribute:NSFontAttributeName value:font range:range];
+        [attributedString addAttribute:NSFontAttributeName value:font range:range];
     }
 
     if ([type isEqualToString:@"syntax"]) {
