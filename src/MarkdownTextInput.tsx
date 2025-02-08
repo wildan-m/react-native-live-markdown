@@ -63,6 +63,7 @@ interface MarkdownTextInputProps extends TextInputProps, InlineImagesInputProps 
   markdownStyle?: PartialMarkdownStyle;
   formatSelection?: (selectedText: string, formatCommand: string) => string;
   parser: (value: string) => MarkdownRange[];
+  shouldAlignEmojiVertically?: boolean;
 }
 
 type MarkdownTextInput = TextInput & React.Component<MarkdownTextInputProps>;

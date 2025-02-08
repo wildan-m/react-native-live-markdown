@@ -4,7 +4,7 @@ import type {PartialMarkdownStyle} from '../../styleUtils';
 import {addInlineImagePreview} from '../inputElements/inlineImage';
 import type {NodeType, TreeNode} from './treeUtils';
 
-function addStyleToBlock(targetElement: HTMLElement, type: NodeType, markdownStyle: PartialMarkdownStyle, isMultiline = true) {
+function addStyleToBlock(targetElement: HTMLElement, type: NodeType, markdownStyle: PartialMarkdownStyle, isMultiline = true, shouldAlignEmojiVertically = true) {
   const node = targetElement;
 
   switch (type) {
@@ -29,7 +29,7 @@ function addStyleToBlock(targetElement: HTMLElement, type: NodeType, markdownSty
     case 'emoji':
       Object.assign(node.style, {
         ...markdownStyle.emoji,
-        verticalAlign: 'middle',
+        verticalAlign: shouldAlignEmojiVertically ? 'middle' : 'baseline',
         fontStyle: 'normal', // remove italic
         textDecoration: 'none', // remove strikethrough
         display: 'inline-block',

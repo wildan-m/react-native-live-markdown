@@ -87,7 +87,7 @@ function addBrElement(node: TreeNode) {
   return spanNode;
 }
 
-function addTextToElement(node: TreeNode, text: string, isMultiline = true) {
+function addTextToElement(node: TreeNode, text: string, isMultiline = true, shouldAlignEmojiVertically = true) {
   const lines = text.split('\n');
   lines.forEach((line, index) => {
     if (line !== '') {
@@ -100,7 +100,7 @@ function addTextToElement(node: TreeNode, text: string, isMultiline = true) {
       const parentType = span.parentElement?.dataset.type;
       if (!isMultiline && parentType && ['pre', 'code', 'mention-here', 'mention-user', 'mention-report'].includes(parentType)) {
         // this is a fix to background colors being shifted downwards in a singleline input
-        addStyleToBlock(span, 'text', {}, false);
+        addStyleToBlock(span, 'text', {}, false, shouldAlignEmojiVertically);
       }
     }
 
@@ -110,11 +110,11 @@ function addTextToElement(node: TreeNode, text: string, isMultiline = true) {
   });
 }
 
-function addParagraph(node: TreeNode, text: string | null, length: number, disableInlineStyles = false) {
+function addParagraph(node: TreeNode, text: string | null, length: number, disableInlineStyles = false, shouldAlignEmojiVertically = true) {
   const p = document.createElement('p');
   p.setAttribute('data-type', 'line');
   if (!disableInlineStyles) {
-    addStyleToBlock(p, 'line', {});
+    addStyleToBlock(p, 'line', {}, undefined, shouldAlignEmojiVertically);
   }
 
   const pNode = appendNode(p as unknown as HTMLMarkdownElement, node, 'line', length);
@@ -123,16 +123,16 @@ function addParagraph(node: TreeNode, text: string | null, length: number, disab
     // If the line is empty, we still need to add a br element to keep the line height
     addBrElement(pNode);
   } else if (text) {
-    addTextToElement(pNode, text);
+    addTextToElement(pNode, text, undefined, shouldAlignEmojiVertically);
   }
 
   return pNode;
 }
 
-function addBlockWrapper(targetNode: TreeNode, length: number, markdownStyle: PartialMarkdownStyle) {
+function addBlockWrapper(targetNode: TreeNode, length: number, markdownStyle: PartialMarkdownStyle, shouldAlignEmojiVertically = true) {
   const span = document.createElement('span') as HTMLMarkdownElement;
   span.setAttribute('data-type', 'block');
-  addStyleToBlock(span, 'block', markdownStyle);
+  addStyleToBlock(span, 'block', markdownStyle, undefined, shouldAlignEmojiVertically);
   return appendNode(span, targetNode, 'block', length);
 }
 
@@ -145,6 +145,7 @@ function parseRangesToHTMLNodes(
   disableInlineStyles = false,
   currentInput: MarkdownTextInputElement | null = null,
   inlineImagesProps: InlineImagesInputProps = {},
+  shouldAlignEmojiVertically = true,
 ) {
   const rootElement: HTMLMarkdownElement = document.createElement('span') as HTMLMarkdownElement;
   const textLength = text.length;
@@ -155,7 +156,7 @@ function parseRangesToHTMLNodes(
 
   if (ranges.length === 0) {
     lines.forEach((line) => {
-      addParagraph(rootNode, line.text, line.length, disableInlineStyles);
+      addParagraph(rootNode, line.text, line.length, disableInlineStyles, shouldAlignEmojiVertically);
     });
     return {dom: rootElement, tree: rootNode};
   }
@@ -173,14 +174,14 @@ function parseRangesToHTMLNodes(
     }
 
     // preparing line paragraph element for markdown text
-    currentParentNode = addParagraph(rootNode, null, line.length, disableInlineStyles);
+    currentParentNode = addParagraph(rootNode, null, line.length, disableInlineStyles, shouldAlignEmojiVertically);
     rootElement.value = (rootElement.value || '') + line.text;
     if (lines.length > 0) {
       rootElement.value = `${rootElement.value || ''}\n`;
     }
 
     if (line.markdownRanges.length === 0) {
-      addTextToElement(currentParentNode, line.text);
+      addTextToElement(currentParentNode, line.text, undefined, shouldAlignEmojiVertically);
     }
 
     let wasBlockGenerated = false;
@@ -200,13 +201,18 @@ function parseRangesToHTMLNodes(
       // wrap all elements before the first block type markdown range with a span element
       const blockRange = getFirstBlockMarkdownRange([range, ...lineMarkdownRanges]);
       if (!wasBlockGenerated && blockRange) {
-        currentParentNode = addBlockWrapper(currentParentNode, line.text.substring(lastRangeEndIndex - line.start, blockRange.start + blockRange.length - line.start).length, markdownStyle);
+        currentParentNode = addBlockWrapper(
+          currentParentNode,
+          line.text.substring(lastRangeEndIndex - line.start, blockRange.start + blockRange.length - line.start).length,
+          markdownStyle,
+          shouldAlignEmojiVertically,
+        );
         wasBlockGenerated = true;
       }
       // add text before the markdown range
       const textBeforeRange = line.text.substring(lastRangeEndIndex - line.start, range.start - line.start);
       if (textBeforeRange) {
-        addTextToElement(currentParentNode, textBeforeRange);
+        addTextToElement(currentParentNode, textBeforeRange, undefined, shouldAlignEmojiVertically);
       }
 
       // create markdown span element
@@ -214,7 +220,7 @@ function parseRangesToHTMLNodes(
       span.setAttribute('data-type', range.type);
 
       if (!disableInlineStyles) {
-        addStyleToBlock(span, range.type, markdownStyle, isMultiline);
+        addStyleToBlock(span, range.type, markdownStyle, isMultiline, shouldAlignEmojiVertically);
       }
 
       const spanNode = appendNode(span, currentParentNode, range.type, range.length);
@@ -229,14 +235,14 @@ function parseRangesToHTMLNodes(
         lastRangeEndIndex = range.start;
       } else {
         // adding markdown tag
-        addTextToElement(spanNode, text.substring(range.start, endOfCurrentRange), isMultiline);
+        addTextToElement(spanNode, text.substring(range.start, endOfCurrentRange), isMultiline, shouldAlignEmojiVertically);
         currentParentNode.element.value = (currentParentNode.element.value || '') + (spanNode.element.value || '');
         lastRangeEndIndex = endOfCurrentRange;
         // tag unnesting and adding text after the tag
         while (currentParentNode.parentNode !== null && nextRangeStartIndex >= currentParentNode.start + currentParentNode.length) {
           const textAfterRange = line.text.substring(lastRangeEndIndex - line.start, currentParentNode.start - line.start + currentParentNode.length);
           if (textAfterRange) {
-            addTextToElement(currentParentNode, textAfterRange);
+            addTextToElement(currentParentNode, textAfterRange, undefined, shouldAlignEmojiVertically);
           }
           lastRangeEndIndex = currentParentNode.start + currentParentNode.length;
           if (currentParentNode.parentNode.type !== 'root') {
@@ -277,6 +283,7 @@ function updateInputStructure(
   shouldForceDOMUpdate = false,
   shouldScrollIntoView = false,
   inlineImagesProps: InlineImagesInputProps = {},
+  shouldAlignEmojiVertically = true,
 ) {
   const targetElement = target;
 
@@ -295,7 +302,7 @@ function updateInputStructure(
 
   // We don't want to parse text with single '\n', because contentEditable represents it as invisible <br />
   if (text) {
-    const {dom, tree} = parseRangesToHTMLNodes(text, markdownRanges, isMultiline, markdownStyle, false, targetElement, inlineImagesProps);
+    const {dom, tree} = parseRangesToHTMLNodes(text, markdownRanges, isMultiline, markdownStyle, false, targetElement, inlineImagesProps, shouldAlignEmojiVertically);
 
     if (shouldForceDOMUpdate || targetElement.innerHTML !== dom.innerHTML) {
       const animationTimes = getAnimationCurrentTimes(targetElement);

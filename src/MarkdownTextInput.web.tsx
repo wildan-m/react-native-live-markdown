@@ -34,6 +34,7 @@ interface MarkdownTextInputProps extends TextInputProps, InlineImagesInputProps 
   onClick?: (e: MouseEvent<HTMLDivElement>) => void;
   dir?: string;
   disabled?: boolean;
+  shouldAlignEmojiVertically?: boolean;
 }
 
 interface MarkdownNativeEvent extends Event {
@@ -112,6 +113,7 @@ const MarkdownTextInput = React.forwardRef<MarkdownTextInput, MarkdownTextInputP
       maxLength,
       addAuthTokenToImageURLCallback,
       imagePreviewAuthRequiredURLs,
+      shouldAlignEmojiVertically = true,
     },
     ref,
   ) => {
@@ -172,10 +174,22 @@ const MarkdownTextInput = React.forwardRef<MarkdownTextInput, MarkdownTextInputP
         if (text === null) {
           return {text: divRef.current.value, cursorPosition: null};
         }
-        const parsedText = updateInputStructure(parserFunction, target, text, cursorPosition, multiline, customMarkdownStyles, false, shouldForceDOMUpdate, shouldScrollIntoView, {
-          addAuthTokenToImageURLCallback,
-          imagePreviewAuthRequiredURLs,
-        });
+        const parsedText = updateInputStructure(
+          parserFunction,
+          target,
+          text,
+          cursorPosition,
+          multiline,
+          customMarkdownStyles,
+          false,
+          shouldForceDOMUpdate,
+          shouldScrollIntoView,
+          {
+            addAuthTokenToImageURLCallback,
+            imagePreviewAuthRequiredURLs,
+          },
+          shouldAlignEmojiVertically,
+        );
         divRef.current.value = parsedText.text;
 
         if (history.current && shouldAddToHistory) {
@@ -184,7 +198,7 @@ const MarkdownTextInput = React.forwardRef<MarkdownTextInput, MarkdownTextInputP
 
         return parsedText;
       },
-      [addAuthTokenToImageURLCallback, imagePreviewAuthRequiredURLs, multiline],
+      [addAuthTokenToImageURLCallback, imagePreviewAuthRequiredURLs, multiline, shouldAlignEmojiVertically],
     );
 
     const processedMarkdownStyle = useMemo(() => {
