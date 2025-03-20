@@ -1,11 +1,17 @@
 #import "LiveMarkdownModule.h"
 
 #import <RNLiveMarkdown/RuntimeDecorator.h>
+
+#ifdef RCT_NEW_ARCH_ENABLED
 #import <RNLiveMarkdown/MarkdownCommitHook.h>
+#endif // RCT_NEW_ARCH_ENABLED
 
 #import <React/RCTBridge+Private.h>
+
+#ifdef RCT_NEW_ARCH_ENABLED
 #import <React/RCTScheduler.h>
 #import <React/RCTSurfacePresenter.h>
+#endif // RCT_NEW_ARCH_ENABLED
 
 #import <jsi/jsi.h>
 
@@ -17,8 +23,10 @@ using namespace expensify::livemarkdown;
 // actually register the hook
 
 @implementation LiveMarkdownModule {
+#ifdef RCT_NEW_ARCH_ENABLED
   std::shared_ptr<MarkdownCommitHook> commitHook_;
   __weak RCTSurfacePresenter *surfacePresenter_;
+#endif // RCT_NEW_ARCH_ENABLED
 }
 
 RCT_EXPORT_MODULE()
@@ -29,11 +37,15 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(install)
   jsi::Runtime &rt = *(jsi::Runtime *)cxxBridge.runtime;
   expensify::livemarkdown::injectJSIBindings(rt);
 
+#ifdef RCT_NEW_ARCH_ENABLED
   RCTScheduler *scheduler = [surfacePresenter_ scheduler];
   commitHook_ = std::make_shared<MarkdownCommitHook>(scheduler.uiManager);
+#endif // RCT_NEW_ARCH_ENABLED
 
   return @(1);
 }
+
+#ifdef RCT_NEW_ARCH_ENABLED
 
 - (void)handleJavaScriptDidLoadNotification:(NSNotification *)notification
 {
@@ -76,5 +88,7 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(install)
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super invalidate];
 }
+
+#endif // RCT_NEW_ARCH_ENABLED
 
 @end

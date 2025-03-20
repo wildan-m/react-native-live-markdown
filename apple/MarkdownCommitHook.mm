@@ -1,3 +1,5 @@
+#ifdef RCT_NEW_ARCH_ENABLED
+
 #include <React/RCTUtils.h>
 #include <react/renderer/core/ComponentDescriptor.h>
 #include <react/renderer/textlayoutmanager/RCTAttributedTextUtils.h>
@@ -301,3 +303,5 @@ RootShadowNode::Unshared MarkdownCommitHook::shadowTreeWillCommit(
 
 } // namespace livemarkdown
 } // namespace expensify
+
+#endif // RCT_NEW_ARCH_ENABLED

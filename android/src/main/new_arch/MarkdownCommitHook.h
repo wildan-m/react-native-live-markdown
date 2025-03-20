@@ -15,7 +15,6 @@
 using namespace facebook;
 using namespace react;
 
-namespace expensify {
 namespace livemarkdown {
 
 struct MarkdownTextInputDecoratorPair {
@@ -55,4 +54,3 @@ private:
 };
 
 } // namespace livemarkdown
-} // namespace expensify

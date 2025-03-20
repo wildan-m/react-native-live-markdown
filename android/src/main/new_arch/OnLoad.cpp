@@ -4,5 +4,5 @@
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *) {
   return facebook::jni::initialize(
-      vm, [] { expensify::livemarkdown::NativeProxy::registerNatives(); });
+      vm, [] { livemarkdown::NativeProxy::registerNatives(); });
 }

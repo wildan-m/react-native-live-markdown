@@ -1,6 +1,8 @@
 #import <UIKit/UIKit.h>
 
+#ifdef RCT_NEW_ARCH_ENABLED
 #import <react/renderer/components/RNLiveMarkdownSpec/Props.h>
+#endif /* RCT_NEW_ARCH_ENABLED */
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -29,7 +31,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) UIColor *mentionReportColor;
 @property (nonatomic) UIColor *mentionReportBackgroundColor;
 
+#ifdef RCT_NEW_ARCH_ENABLED
 - (instancetype)initWithStruct:(const facebook::react::MarkdownTextInputDecoratorViewMarkdownStyleStruct &)style;
+#else
+- (instancetype)initWithDictionary:(NSDictionary *)json;
+#endif /* RCT_NEW_ARCH_ENABLED */
 
 @end
 
