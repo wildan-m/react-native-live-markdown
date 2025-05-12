@@ -123,6 +123,7 @@ function handleOnLoad(
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+      position: 'relative',
     }),
   });
   Object.assign(img.style, !err && imgStyle);
