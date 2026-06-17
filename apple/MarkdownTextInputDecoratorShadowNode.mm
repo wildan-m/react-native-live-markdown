@@ -33,8 +33,16 @@ MarkdownTextInputDecoratorShadowNode::MarkdownTextInputDecoratorShadowNode(
     ShadowNodeFragment const &fragment)
     : ConcreteViewShadowNode(sourceShadowNode, fragment) {
   initialize();
+
+  // Carry over the markdown utils (and therefore its memoizing parser) from the
+  // source node so the parse cache survives cloning instead of being discarded
+  // on every clone/measure pass.
+  const auto &sourceDecorator =
+      static_cast<const MarkdownTextInputDecoratorShadowNode &>(sourceShadowNode);
+  markdownUtils_ = sourceDecorator.markdownUtils_;
+
   makeChildNodeMutable();
-  
+
   if (fragment.children) {
     overwriteMeasureCallbackConnector();
   }
@@ -185,7 +193,17 @@ void MarkdownTextInputDecoratorShadowNode::applyMarkdownFormattingToTextInputSta
   // this can possibly be optimized
   RCTMarkdownStyle *markdownStyle =
       [[RCTMarkdownStyle alloc] initWithStruct:decoratorProps.markdownStyle];
-  RCTMarkdownUtils *utils = [[RCTMarkdownUtils alloc] init];
+  // Reuse a single persisted RCTMarkdownUtils (lazily created here, carried over
+  // across clones) so that MarkdownParser's text+parserId memoization actually
+  // takes effect. Allocating a fresh RCTMarkdownUtils on every measure pass
+  // threw away the parser's _prevText/_prevMarkdownRanges cache, forcing the
+  // full createStringFromUtf8 + worklet parse to re-run on the main thread for
+  // every Yoga measure callback. Style and parserId are cheap to set each call;
+  // only the parse is expensive, and that is what gets memoized.
+  if (markdownUtils_ == nil) {
+    markdownUtils_ = [[RCTMarkdownUtils alloc] init];
+  }
+  RCTMarkdownUtils *utils = markdownUtils_;
   [utils setMarkdownStyle:markdownStyle];
   [utils setParserId:[NSNumber numberWithInt:decoratorProps.parserId]];
 

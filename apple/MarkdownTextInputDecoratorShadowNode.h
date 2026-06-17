@@ -8,6 +8,8 @@
 #include <react/renderer/components/view/ConcreteViewShadowNode.h>
 #include <react/renderer/core/LayoutContext.h>
 
+@class RCTMarkdownUtils;
+
 namespace facebook {
 namespace react {
 
@@ -48,6 +50,14 @@ private:
                                                  YGMeasureMode heightMode);
   static YogaLayoutableShadowNode &
   shadowNodeFromContext(YGNodeConstRef yogaNode);
+
+  // Persisted across clones so that MarkdownParser's memoization survives the
+  // frequent cloning of shadow nodes and the repeated Yoga measure passes.
+  // Lazily created on the first measure and carried over in the clone
+  // constructor (mirrors how the Android shadow node persists
+  // previousParserId_/customContextContainer_). mutable because it is lazily
+  // initialized from the const applyMarkdownFormattingToTextInputState.
+  mutable RCTMarkdownUtils *markdownUtils_ = nil;
 };
 
 } // namespace react
