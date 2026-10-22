@@ -51,10 +51,37 @@ using namespace facebook::react;
     static const auto defaultProps = std::make_shared<const MarkdownTextInputDecoratorViewProps>();
     _props = defaultProps;
     _observersAdded = false;
-    _markdownUtils = [[RCTMarkdownUtils alloc] init];
+    _markdownUtils = [self createMarkdownUtils];
   }
 
   return self;
+}
+
+- (RCTMarkdownUtils *)createMarkdownUtils
+{
+  RCTMarkdownUtils *markdownUtils = [[RCTMarkdownUtils alloc] init];
+
+  // The main thread never runs the parser (see RCTMarkdownUtils). When the
+  // ranges are not cached yet, the text keeps its old attributes and is parsed
+  // in the background; format it again once the ranges are ready.
+  __weak MarkdownTextInputDecoratorComponentView *weakSelf = self;
+  markdownUtils.onAsyncFormattingReady = ^{
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [weakSelf applyAsyncFormatting];
+    });
+  };
+
+  return markdownUtils;
+}
+
+- (void)applyAsyncFormatting
+{
+  if (_textView != nil && _textView.markedTextRange != nil) {
+    // Don't touch the text storage during multi-stage input, it would break the
+    // composition. The text is formatted again when the input is committed.
+    return;
+  }
+  [self applyNewStyles];
 }
 
 - (void)didAddSubview:(UIView *)subview
@@ -247,7 +274,7 @@ using namespace facebook::react;
 
   static const auto defaultProps = std::make_shared<const MarkdownTextInputDecoratorViewProps>();
   _props = defaultProps;
-  _markdownUtils = [[RCTMarkdownUtils alloc] init];
+  _markdownUtils = [self createMarkdownUtils];
 }
 
 Class<RCTComponentViewProtocol> MarkdownTextInputDecoratorViewCls(void)
