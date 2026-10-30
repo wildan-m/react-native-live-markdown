@@ -64,7 +64,7 @@ function didTwoCodeblocksMerge(node: ChildNode | null) {
 /**
  * Parses the HTML structure of a MarkdownTextInputElement to a plain text string. Used for getting the correct value of the input element.
  */
-function parseInnerHTMLToText(target: MarkdownTextInputElement, cursorPosition: number, inputType?: string, isMultiline = true): string {
+function parseInnerHTMLToText(target: MarkdownTextInputElement, cursorPosition: number, selectionEnd: number, inputType?: string, isMultiline = true): string {
   const stack: ChildNode[] = [target];
   let text = '';
   let shouldAddNewline = false;
@@ -155,7 +155,12 @@ function parseInnerHTMLToText(target: MarkdownTextInputElement, cursorPosition: 
 
   // Force letter removal if the input value haven't changed but input type is 'delete'
   if (text === target.value && inputType?.includes('delete')) {
-    text = text.slice(0, cursorPosition - 1) + text.slice(cursorPosition);
+    if (selectionEnd > cursorPosition) {
+      // Remove the selected range instead of a single character when the selection is not collapsed
+      text = text.slice(0, cursorPosition) + text.slice(selectionEnd);
+    } else {
+      text = text.slice(0, Math.max(cursorPosition - 1, 0)) + text.slice(cursorPosition);
+    }
   }
   return text;
 }
