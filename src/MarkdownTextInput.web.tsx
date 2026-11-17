@@ -652,22 +652,39 @@ const MarkdownTextInput = React.forwardRef<MarkdownTextInput, MarkdownTextInputP
       [onClick],
     );
 
-    const handleCopy: ClipboardEventHandler<HTMLDivElement> = useCallback((e) => {
-      if (!divRef.current || !contentSelection.current) {
-        return;
+    // The cached selection is only refreshed by the async `select` event, so a fast copy shortcut can run before it catches up; read the DOM selection instead.
+    const syncSelectionFromDOM = useCallback(() => {
+      if (!divRef.current) {
+        return contentSelection.current;
       }
-      e.preventDefault();
-      const text = divRef.current?.value.substring(contentSelection.current.start, contentSelection.current.end);
-      e.clipboardData.setData('text/plain', text ?? '');
-    }, []);
+      const liveSelection = getCurrentCursorPosition(divRef.current);
+      if (liveSelection && liveSelection.start >= 0 && liveSelection.end >= liveSelection.start) {
+        updateRefSelectionVariables(liveSelection);
+        contentSelection.current = liveSelection;
+      }
+      return contentSelection.current;
+    }, [updateRefSelectionVariables]);
+
+    const handleCopy: ClipboardEventHandler<HTMLDivElement> = useCallback(
+      (e) => {
+        const copySelection = syncSelectionFromDOM();
+        if (!divRef.current || !copySelection || copySelection.start === copySelection.end) {
+          return;
+        }
+        e.preventDefault();
+        const text = divRef.current.value.substring(copySelection.start, copySelection.end);
+        e.clipboardData.setData('text/plain', text);
+      },
+      [syncSelectionFromDOM],
+    );
 
     const handleCut = useCallback(
       (e: React.ClipboardEvent<HTMLDivElement>) => {
-        if (!divRef.current || !contentSelection.current) {
+        if (!divRef.current) {
           return;
         }
         handleCopy(e);
-        if (contentSelection.current.start !== contentSelection.current.end) {
+        if (contentSelection.current && contentSelection.current.start !== contentSelection.current.end) {
           document.execCommand('delete');
         }
       },
